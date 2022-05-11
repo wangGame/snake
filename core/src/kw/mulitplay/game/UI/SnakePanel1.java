@@ -1,40 +1,38 @@
 package kw.mulitplay.game.UI;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Pool;
 
+import java.awt.event.KeyAdapter;
 
 import kw.mulitplay.game.AI.SnakeAi;
 import kw.mulitplay.game.Mode.Node;
 import kw.mulitplay.game.Mode.Snake;
 
 
-public class SnakePanel extends Group{
+public class SnakePanel1 extends Group{
 	Snake snake;
-	SnakeAi ai;
-
+	private int dir =2;
+	private Stage s;
 	/**
 	 * Create the panel.
 	 */
-	public SnakePanel() {
-
-		Image image = new Image(new Texture("bg.webp"));
+	public SnakePanel1(Stage s) {
+		this.s = s;
+		Pixmap pixmap = getPixmap(620, 30);
+		Image image = new Image(new Texture(pixmap));
 		addActor(image);
-		image.setColor(Color.valueOf("88888888"));
+		image.setColor(Color.valueOf("888888"));
 		snake=new Snake();
 		Node n=new Node(10,10);//�ߵĳ�ʼλ��
 		snake.getS().add(n);
@@ -42,16 +40,30 @@ public class SnakePanel extends Group{
 		snake.setLast(n);
 		snake.setTail(new Node(0,10));//last�ĺ�һ���ڵ�
 		snake.setFood(new Node(80,80));//ʳ���ʼλ��
-		ai=new SnakeAi();
 
-		addListener(new ClickListener(){
-			@Override
-			public void clicked(InputEvent event, float x, float y) {
-				super.clicked(event, x, y);
-				touch = true;
-			}
-		});
+//		8 下 6 右  2 上  4 左
+
+		s.addListener(BackInputListener());
 	}
+
+	private InputListener BackInputListener() {
+		return new InputListener(){
+			@Override
+			public boolean keyDown(InputEvent event, int keycode) {
+				if ((keycode == Input.Keys.LEFT)) {
+					dir = 4;
+				}else if ((keycode == Input.Keys.RIGHT)) {
+					dir = 6;
+				}else if ((keycode == Input.Keys.DOWN)) {
+					dir = 8;
+				}else if ((keycode == Input.Keys.UP)) {
+					dir = 2;
+				}
+				return super.keyDown(event, keycode);
+			}
+		};
+	}
+
 
 	private Pixmap getPixmap(int i2, int i3) {
 		i3 = Color.valueOf("FFFFFF").toIntBits();
@@ -68,28 +80,22 @@ public class SnakePanel extends Group{
 
 	Array<Image> array = new Array<>();
 
-	private float time = 0;
+	private float time = 1;
 
 	@Override
 	public void act(float delta) {
 		super.act(delta);
-		time += delta;
-		if (time > 0.06F){
+		time+=delta;
+		if (time > 0.2F) {
 			time = 0;
-			index=0;
+			index = 0;
 			paintSnake(snake);
 			paintFood(snake.getFood());
-			int dir=ai.play2(snake,snake.getFood());//ѡ����ԣ�play ,play1,play2
 			snake.move(dir);
-
 		}
+
 	}
 
-	@Override
-	public void draw(Batch batch, float parentAlpha) {
-		if (!touch)return;
-		super.draw(batch,1);
-	}
 	private int index = 0;
 	/**
 	 * @param snake
@@ -101,29 +107,27 @@ public class SnakePanel extends Group{
 			Image image;
 			if (array.size>index){
 				image = array.get(index - 1);
-				image.setPosition(n.getX()*4,n.getY()*4);
+				image.setPosition(n.getX()*3,n.getY()*3);
 			}else {
 				Pixmap pixmap = getPixmap(20, 100);
-				image = new Image(find());
+				image = new Image(new Texture(pixmap));
 				array.add(image);
 				image.setPosition(n.getX(),n.getY());
 				addActor(image);
 			}
-			image.setOrigin(Align.center);
-			image.setScale(0.5F);
-//			if (i==0){
-//				if (image!=null) {
-//					image.setColor(Color.BLACK);
-//				}
-//			}else if (i==snake.getS().size()-1){
-//				if (image!=null){
-//					image.setColor(Color.WHITE);
-//				}
-//			}else {
-//				if (image!=null){
-//					image.setColor(Color.BROWN);
-//				}
-//			}
+			if (i==0){
+				if (image!=null) {
+					image.setColor(Color.BLACK);
+				}
+			}else if (i==snake.getS().size()-1){
+				if (image!=null){
+					image.setColor(Color.WHITE);
+				}
+			}else {
+				if (image!=null){
+					image.setColor(Color.BROWN);
+				}
+			}
 		}
 	}
 	/**
@@ -134,26 +138,15 @@ public class SnakePanel extends Group{
 		index++;
 		if (array.size>index){
 			Image image = array.get(index - 1);
-			image.setPosition(food.getX()*4,food.getY()*4);
-			image.setOrigin(Align.center);
-			image.setScale(0.5F);
+			image.setPosition(food.getX()*3,food.getY()*3);
+			image.setColor(Color.BROWN);
 		}else {
-//			Pixmap pixmap = getPixmap(20, 100);
-
-			Image image = new Image(find());
+			Pixmap pixmap = getPixmap(20, 100);
+			Image image = new Image(new Texture(pixmap));
 			array.add(image);
 			addActor(image);
-			image.setPosition(food.getX()*4,food.getY()*4);
-			image.setOrigin(Align.center);
-			image.setScale(0.5F);
-
+			image.setPosition(food.getX()*3,food.getY()*3);
+			image.setColor(Color.BROWN);
 		}
-
-	}
-	public Texture find(){
-		FileHandle xxxx = Gdx.files.internal("xxxx");
-		FileHandle[] list = xxxx.list();
-		FileHandle handle = list[(int) (Math.random() * (list.length - 1))];
-		return new Texture(handle);
 	}
 }

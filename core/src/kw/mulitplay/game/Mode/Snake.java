@@ -15,7 +15,7 @@ public class Snake {
 	/**
 	 * ��ͼ��С
 	 */
-	public final static int map_size=200;
+	public final static int map_size=300;
 	/**
 	 * ��ͷ
 	 */
@@ -75,7 +75,7 @@ public class Snake {
 		}
 	}
 	/**
-	 * �ƶ�
+	 * �ƶ�  8 下 6 右  2 上  4 左
 	 */
 	public void move() {
 		//下
